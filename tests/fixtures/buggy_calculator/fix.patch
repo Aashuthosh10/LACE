@@ -1,0 +1,9 @@
+diff --git a/calculator.py b/calculator.py
+index 5a57b8e..9777a50 100644
+--- a/calculator.py
++++ b/calculator.py
+@@ -1,2 +1,4 @@
+ def divide(dividend: float, divisor: float) -> float:
++    if divisor == 0:
++        return None
+     return dividend / divisor
