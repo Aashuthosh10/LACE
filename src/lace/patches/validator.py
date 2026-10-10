@@ -44,11 +44,17 @@ def validate_patch(
     root, root_error = _git_root(requested)
     if root_error or root is None:
         return ValidationResult(
-            False, False, None, (root_error or "Git root unavailable",), requested, True
+            False, False, False, None, (root_error or "Git root unavailable",), requested, True
         )
     if root != requested:
         return ValidationResult(
-            False, False, None, ("repository path must be the Git work-tree root",), root, True
+            False,
+            False,
+            False,
+            None,
+            ("repository path must be the Git work-tree root",),
+            root,
+            True,
         )
 
     before = _repository_digest(root)
@@ -61,13 +67,19 @@ def validate_patch(
         )
     except (PatchParseError, UnicodeError) as error:
         return ValidationResult(
-            False, False, None, (str(error),), root, _repository_digest(root) == before
+            False,
+            False,
+            False,
+            None,
+            (str(error),),
+            root,
+            _repository_digest(root) == before,
         )
 
     errors = tuple(error for target in info.targets for error in validate_target_path(target))
     if errors:
         return ValidationResult(
-            False, False, info, errors, root, _repository_digest(root) == before
+            False, False, False, info, errors, root, _repository_digest(root) == before
         )
 
     with tempfile.TemporaryDirectory(prefix="lace-validate-") as temporary:
@@ -88,4 +100,6 @@ def validate_patch(
             )
 
     unchanged = _repository_digest(root) == before
-    return ValidationResult(applicable and unchanged, applicable, info, errors, root, unchanged)
+    return ValidationResult(
+        applicable and unchanged, True, applicable, info, errors, root, unchanged
+    )

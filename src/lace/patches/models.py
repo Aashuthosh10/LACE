@@ -15,6 +15,7 @@ class PatchInfo:
 @dataclass(frozen=True)
 class ValidationResult:
     allowed: bool
+    policy_allowed: bool
     applicable: bool
     patch: PatchInfo | None
     errors: tuple[str, ...]

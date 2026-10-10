@@ -26,6 +26,7 @@ def test_doctor_json() -> None:
     assert payload["git"]["status"] == "ready"
     assert payload["isolation"]["verified"] is False
     assert payload["m2_ready"] is True
+    assert "\x1b" not in result.stdout
 
 
 def test_validate_json(git_repository, tmp_path, valid_patch: str) -> None:
@@ -35,7 +36,9 @@ def test_validate_json(git_repository, tmp_path, valid_patch: str) -> None:
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
     assert payload["allowed"] is True
+    assert payload["policy_allowed"] is True
     assert payload["original_unchanged"] is True
+    assert "\x1b" not in result.stdout
 
 
 def test_scan_json(scanning_repository) -> None:
@@ -57,3 +60,24 @@ def test_scan_json(scanning_repository) -> None:
     assert payload["repository"]["python_files"] == 3
     assert payload["selection"]["selected_files"][0]["path"] == "src/shop/discount.py"
     assert "context" not in payload["selection"]
+    assert "\x1b" not in result.stdout
+
+
+def test_bare_command_launches_interactive(monkeypatch) -> None:
+    called = []
+    monkeypatch.setattr(
+        "lace.interactive.run_interactive", lambda repository: called.append(repository)
+    )
+    result = runner.invoke(app, [])
+    assert result.exit_code == 0
+    assert len(called) == 1
+
+
+def test_explicit_interactive_command(monkeypatch, scanning_repository) -> None:
+    called = []
+    monkeypatch.setattr(
+        "lace.interactive.run_interactive", lambda repository: called.append(repository)
+    )
+    result = runner.invoke(app, ["interactive", "--repo", str(scanning_repository)])
+    assert result.exit_code == 0
+    assert called == [scanning_repository.resolve()]

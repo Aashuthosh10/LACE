@@ -26,7 +26,9 @@ flowchart LR
 
 | Component | Responsibility | Principal interface | Dependencies |
 |---|---|---|---|
-| `cli` | Parse commands, render output, map exit codes | `main()`, `doctor`, later `run` | application services |
+| `cli` | Parse noninteractive commands, JSON output, and exit codes | `main()`, `doctor`, `scan`, `validate` | application services |
+| `interactive` | Retain session repository and render Rich/prompt-toolkit UI | `InteractiveSession`, `run_interactive` | same application/domain services as CLI |
+| `diagnostics` | Detect tool versions and readiness without claiming integration | `collect_diagnostics` | OS/process boundary |
 | `config` | Load defaults/file/env and validate | `Settings` | Pydantic |
 | `contracts` | Versioned immutable request/result records | models/enums | none |
 | `repository` | Identify root, inventory metadata, state hashes | `RepositoryGateway` | filesystem/Git |
@@ -156,3 +158,8 @@ flowchart LR
 
 Raw source, prompts, and test output are retained only by explicit configuration; hashes and redacted summaries are the default. See `06-BACKEND-AND-DATA-SCHEMA.md`.
 
+## Interactive Presentation Boundary
+
+Milestone 2.5 adds no new domain authority. `terminal.input.InputComposer` owns multiline editing, ephemeral history, completion, and key bindings; `terminal.state.SessionState` owns the selected repository, phase, and last activity; `terminal.render.TerminalRenderer` owns Rich output and progress lifecycles; `terminal.session.InteractiveSession` dispatches commands and coordinates existing services. The small `interactive` module is a stable launch facade. No layer starts a subprocess to invoke LACE itself.
+
+Scanner and validator calls remain synchronous, bounded operations. Rich's managed status context keeps activity visible and restores the line on completion, cancellation, or exception; no persistent worker or background process is created. Future model, risk, execution, repair, and approval results may use the renderer only after their owning milestones implement typed services.

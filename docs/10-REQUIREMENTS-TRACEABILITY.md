@@ -47,7 +47,8 @@ Both documents were read in full, including introductory/scope/objective section
 | NFR-04/05 | benchmark objective + REC | contracts/reporting | M1, M7 | schema/tool/config hashes reproduce run |
 | NFR-06 | safety goal + REC | config/adapters | M1-M6 | every boundary has tested limits |
 | NFR-07 | REC | CLI | M1-M8 | no-color/JSON/keyboard tests |
+| UI-01 | M2.5 requested usability enhancement | interactive/diagnostics | M2.5 | bare and explicit startup, command dispatch, narrow layout, interrupt/EOF tests |
 
 ## Coverage After M2
 
-M2 implements Git-tracked repository inventory, safe file classification, and deterministic bounded Python context selection for OBJ-02 and FR-02/03. Risk scoring, restricted tests, Ollama, repair, final approval/application, rollback restoration, and benchmark execution intentionally remain unimplemented. This is planned milestone scope, not evidence that the MVP is complete. The planned M1-M7 feature set covers every core objective of both sources; M8 validates the integrated MVP.
+M2 implements Git-tracked repository inventory, safe file classification, and deterministic bounded Python context selection for OBJ-02 and FR-02/03. M2.5 adds an optional interface over those capabilities and does not claim a new research objective. Risk scoring, restricted tests, Ollama, repair, final approval/application, rollback restoration, and benchmark execution intentionally remain unimplemented. This is planned milestone scope, not evidence that the MVP is complete. The planned M1-M7 feature set covers every core objective of both sources; M8 validates the integrated MVP.

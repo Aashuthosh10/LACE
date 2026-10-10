@@ -5,10 +5,12 @@ All interfaces beyond the M1 commands are proposed until their milestone is impl
 ## Command Hierarchy
 
 ```text
+lace                                             # M2.5 interactive mode
+lace interactive [--repo PATH]                   # M2.5 explicit mode
 lace --help | --version
 lace doctor [--json]
 lace validate PATCH --repo PATH [--json]       # M1
-lace scan PATH [--json]                         # M2 proposed
+lace scan --repo PATH --task TEXT [--json]       # M2
 lace run TASK --repo PATH [--config FILE]       # M3-M6 proposed
 lace report RUN_ID [--json]                     # proposed
 lace benchmark SUITE [--model NAME]              # M7 proposed
@@ -16,6 +18,36 @@ lace cleanup [--older-than DURATION]             # proposed
 ```
 
 Exit codes: `0` success, `2` usage/configuration, `3` repository, `4` invalid patch, `5` policy blocked, `6` unavailable isolation/tool, `7` tests failed, `8` approval declined/state changed, `9` internal error, `130` cancellation.
+
+## Interactive Mode
+
+Bare `lace` and `lace interactive` open an optional stateful terminal. The active repository defaults to the current directory only when it is a valid Git root. `/repo <path>` changes it after scanner validation. Commands are `/help`, `/status`, `/doctor`, `/scan <task>`, `/validate <patch>`, `/details`, `/repo <path>`, `/clear`, and `/exit`. Quoted paths and Unicode input are accepted. Empty input is ignored, `Ctrl+C` cancels input or the current bounded operation, and EOF or `/exit` closes cleanly.
+
+The composer uses Enter to submit and Alt+Enter to insert a newline. Up/Down navigate in-memory session history, and slash-command completion is available through Tab. Multiline continuation uses a compact `|` marker. History is intentionally not persisted to disk because tasks and paths may be sensitive.
+
+The shell calls the same services as standalone commands. It does not run LACE subprocesses, execute repository code, apply patches, or contact a model. Free-form task text displays an honest unavailable message and points to deterministic `/scan`.
+
+```console
+$ lace
+LACE 0.1.0
+Local-first coding controls
+Repository  C:\work\sample
+Mode        interactive, deterministic tools only
+AI model    unavailable until M5
+Sandbox     docker; unverified until M4
+lace> /scan "Fix incorrect discount calculation"
+Operation  Repository scan
+Status     complete
+Scanned    14
+Selected   2
+Excluded   3
+Context    1834 / configured character budget
+lace> /details
+Repository scan details
+  src/shop/discount.py score 26: exact filename; python symbols
+lace> /exit
+Session closed.
+```
 
 ## End-to-End Developer Flow
 
@@ -96,4 +128,3 @@ Patch previews use standard diff colors only when supported, line-number gutters
 - Model, Git, test, and approval waits have separate configurable timeouts.
 - A failed cleanup is surfaced prominently with the retained path; it does not rewrite the primary result.
 - Noninteractive mode never assumes approval. It requires an explicit future approval mechanism bound to patch and base hashes.
-

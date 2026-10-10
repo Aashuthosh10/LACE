@@ -4,17 +4,21 @@ LACE is a local-first, CLI-first harness for controlled AI-assisted changes to P
 
 ## Current Status
 
-**Milestone 2:** repository scanning and deterministic context selection. The current code provides `lace --help`, `lace --version`, `lace doctor`, `lace validate`, and `lace scan`. It inventories safe Git-tracked files, selects relevant Python context under explicit limits, parses unified diffs, rejects unsafe targets, and checks Git applicability in a disposable copy. Models, risk scoring, tests of target code, repair, final apply, and benchmarking are not implemented yet.
+**Milestone 2.5:** optional interactive terminal interface. Running `lace` opens a stateful PowerShell/terminal session over the existing diagnostics, scanning, context-selection, and validation services. Ordinary `doctor`, `validate`, and `scan` commands remain available for scripts. Models, risk scoring, tests of target code, repair, final apply, and benchmarking are not implemented yet.
 
 ## Setup
 
 ```powershell
 uv sync --dev
+uv run lace
+uv run lace interactive --repo <git-repository>
 uv run lace --help
 uv run lace doctor
 uv run lace scan --repo <git-repository> --task "Fix incorrect discount calculation"
 uv run lace validate tests/fixtures/buggy_calculator/fix.patch --repo <git-repository>
 ```
+
+Interactive commands are `/help`, `/status`, `/doctor`, `/repo <path>`, `/scan <task>`, `/validate <patch>`, `/details`, `/clear`, and `/exit`. Enter submits, Alt+Enter inserts a newline, Tab completes slash commands, and Up/Down browse in-memory history. Natural-language input does not invoke AI; the interface reports that autonomous task execution remains unavailable.
 
 ```powershell
 uv run ruff format --check .

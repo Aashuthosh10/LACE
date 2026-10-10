@@ -4,7 +4,7 @@
 
 - **TR-01:** CPython 3.12 or 3.13 is the supported baseline; Python 3.14 may be used only after dependency verification. Windows development is supported, while restricted untrusted execution targets Linux containers.
 - **TR-02:** Git 2.40+, Ollama when model features arrive, and a container runtime for M4 are external tools detected by `lace doctor`.
-- **TR-03:** Use a `src/` package, `pyproject.toml`, Typer, Pydantic 2, pytest, Ruff, and standard logging. Pin compatible lower/upper bounds and lock reproducible environments.
+- **TR-03:** Use a `src/` package, `pyproject.toml`, Typer, Rich, prompt-toolkit, Pydantic 2, pytest, Ruff, and standard logging. Pin compatible lower/upper bounds and lock reproducible environments. Rich and prompt-toolkit are presentation-only dependencies.
 - **TR-04:** Minimum hardware is not asserted by the sources. REC: 8 GB RAM for the harness; model-specific RAM/VRAM and disk are reported rather than promised.
 
 ## Repository and Context
@@ -44,8 +44,8 @@
 - **TR-25:** No unverified latency benchmark is promised. Each stage records monotonic duration and timeout status; evaluation reports median and p95 over declared hardware.
 - **TR-26:** Core parsing/policy logic is pure and injectable. Git, clock, filesystem, model, executor, and approval boundaries have typed protocols.
 - **TR-27:** Unit tests cover parsers and policies; integration tests use fixture Git repositories; isolation tests prove network, host path, resource, and timeout restrictions; end-to-end tests cover approval and rollback.
+- **TR-28:** Interactive mode retains one validated repository per session, uses multiline input with in-memory command history/completion, calls application services directly, handles interrupt/EOF cleanly, provides bounded operation progress and last-result details, and never treats natural-language input as an implemented AI task.
 
 ## Acceptance Criteria
 
 M1 is accepted when `lace --help`, `--version`, and `doctor` work; configuration validates; a valid fixture patch passes parse/path/Git checks in a disposable copy; malformed, traversal, absolute, forbidden, and non-applicable patches fail; the original fixture remains byte-for-byte and Git-status unchanged; Ruff and pytest pass. M1 executes no target repository code. Later milestones use the criteria in `08-IMPLEMENTATION-PLAN.md`.
-

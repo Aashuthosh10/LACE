@@ -30,6 +30,7 @@ def test_validates_in_copy_and_preserves_original(git_repository: Path, valid_pa
     result = validate_patch(git_repository, valid_patch)
 
     assert result.allowed
+    assert result.policy_allowed
     assert result.applicable
     assert result.original_unchanged
     assert digest(git_repository) == before_digest
@@ -42,6 +43,7 @@ def test_rejects_non_applicable_patch(git_repository: Path, valid_patch: str) ->
     before = digest(git_repository)
     result = validate_patch(git_repository, valid_patch)
     assert not result.allowed
+    assert result.policy_allowed
     assert not result.applicable
     assert result.original_unchanged
     assert digest(git_repository) == before
@@ -56,6 +58,7 @@ def test_rejects_forbidden_target_before_git(git_repository: Path) -> None:
 """
     result = validate_patch(git_repository, patch)
     assert not result.allowed
+    assert not result.policy_allowed
     assert not result.applicable
     assert any("sensitive" in error for error in result.errors)
 

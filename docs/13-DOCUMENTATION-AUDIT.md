@@ -31,7 +31,7 @@ The planned MVP covers local Ollama, repository scanning/context, unified diff g
 
 ## Known Uncertainties and Coverage
 
-OPEN-01 through OPEN-05 in the ADR document remain visible and milestone-bound. Exact sandbox runtime, model/hardware, benchmark scale, risk calibration, and dirty-tree policy require later empirical decisions. M1 covers foundation and patch validation; M2 covers tracked-file scanning and deterministic context selection. Later features remain traced, with no claim of implementation. Security residual risks are stated in the threat model.
+OPEN-01 through OPEN-05 in the ADR document remain visible and milestone-bound. Exact sandbox runtime, model/hardware, benchmark scale, risk calibration, and dirty-tree policy require later empirical decisions. M1 covers foundation and patch validation; M2 covers tracked-file scanning and deterministic context selection; M2.5 is presentation-only. The interface reuses existing services, retains no project data beyond the process, and labels AI and isolation capabilities unavailable/unverified. Later features remain traced, with no claim of implementation. Security residual risks are stated in the threat model.
 
 ## M1 Authorization
 

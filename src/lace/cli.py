@@ -1,10 +1,6 @@
 """LACE command-line interface."""
 
 import json
-import platform
-import shutil
-import subprocess
-import sys
 from pathlib import Path
 from typing import Annotated
 
@@ -13,11 +9,13 @@ import typer
 from lace import __version__
 from lace.config import RepositoryLimits
 from lace.context import select_context
+from lace.diagnostics import collect_diagnostics
 from lace.patches import validate_patch
 from lace.repository import RepositoryScanError, scan_repository
 
 app = typer.Typer(
-    help="Validate AI-generated patches before they can reach a repository.", no_args_is_help=True
+    help="Local-first coding controls and deterministic repository tools.",
+    invoke_without_command=True,
 )
 
 
@@ -29,6 +27,7 @@ def _version_callback(value: bool) -> None:
 
 @app.callback()
 def main(
+    ctx: typer.Context,
     version: Annotated[
         bool | None,
         typer.Option(
@@ -36,24 +35,11 @@ def main(
         ),
     ] = None,
 ) -> None:
-    """LACE deterministic patch-validation foundation."""
+    """LACE interactive and deterministic repository tooling."""
+    if ctx.invoked_subcommand is None:
+        from lace.interactive import run_interactive
 
-
-def _tool_version(command: str, arguments: list[str]) -> tuple[str, str]:
-    executable = shutil.which(command)
-    if executable is None:
-        return "unavailable", "not found on PATH"
-    try:
-        completed = subprocess.run(
-            [executable, *arguments], capture_output=True, text=True, check=False, timeout=3
-        )
-    except (OSError, subprocess.TimeoutExpired) as error:
-        return "unavailable", str(error)
-    output = (completed.stdout or completed.stderr).strip().splitlines()
-    return (
-        "ready" if completed.returncode == 0 else "unavailable",
-        output[0] if output else "unknown",
-    )
+        run_interactive(Path.cwd())
 
 
 @app.command()
@@ -61,41 +47,36 @@ def doctor(
     as_json: Annotated[bool, typer.Option("--json", help="Emit machine-readable JSON.")] = False,
 ) -> None:
     """Report core readiness and optional integration availability."""
-    git_status, git_version = _tool_version("git", ["--version"])
-    ollama_status, ollama_version = _tool_version("ollama", ["--version"])
-    container = "podman" if shutil.which("podman") else "docker" if shutil.which("docker") else None
-    container_status, container_version = (
-        _tool_version(container, ["--version"])
-        if container
-        else ("unavailable", "not found on PATH")
-    )
-    payload = {
-        "lace": __version__,
-        "python": {"status": "ready", "version": platform.python_version()},
-        "git": {"status": git_status, "version": git_version},
-        "ollama": {"status": ollama_status, "version": ollama_version, "required_from": "M5"},
-        "isolation": {
-            "status": container_status,
-            "runtime": container,
-            "version": container_version,
-            "required_from": "M4",
-            "verified": False,
-        },
-        "m1_ready": git_status == "ready" and sys.version_info >= (3, 12),
-        "m2_ready": git_status == "ready" and sys.version_info >= (3, 12),
-    }
+    payload = collect_diagnostics(__version__)
     if as_json:
         typer.echo(json.dumps(payload, indent=2))
         return
     typer.echo(f"LACE         {__version__}")
     typer.echo(f"Python       ready       {payload['python']['version']}")
-    typer.echo(f"Git          {git_status:<11} {git_version}")
-    typer.echo(f"Ollama       {ollama_status:<11} {ollama_version} (required from M5)")
+    typer.echo(f"Git          {payload['git']['status']:<11} {payload['git']['version']}")
     typer.echo(
-        f"Isolation    {container_status:<11} {container_version} (required from M4; unverified)"
+        f"Ollama       {payload['ollama']['status']:<11} "
+        f"{payload['ollama']['version']} (required from M5)"
+    )
+    typer.echo(
+        f"Isolation    {payload['isolation']['status']:<11} "
+        f"{payload['isolation']['version']} (required from M4; unverified)"
     )
     typer.echo(f"M1 status    {'ready' if payload['m1_ready'] else 'not ready'}")
     typer.echo(f"M2 status    {'ready' if payload['m2_ready'] else 'not ready'}")
+
+
+@app.command("interactive")
+def interactive_command(
+    repository: Annotated[
+        Path | None,
+        typer.Option("--repo", exists=True, file_okay=False, resolve_path=True),
+    ] = None,
+) -> None:
+    """Launch the optional interactive terminal interface."""
+    from lace.interactive import run_interactive
+
+    run_interactive(repository or Path.cwd())
 
 
 @app.command()

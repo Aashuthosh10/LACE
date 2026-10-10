@@ -10,6 +10,10 @@ Each milestone delivers a working vertical increment and requires approval befor
 
 **Objective:** bounded, explainable repository understanding. **Prerequisites:** M1. **Work:** repository identity/inventory, ignores/binary/sensitive classification, token budgeting, deterministic relevance scoring. **Files:** `repository/`, `context/`, contracts. **Deliverables:** `lace scan` and context manifest. **Tests:** large trees, ignores, encodings, symlink escapes, secret exclusion. **Acceptance:** deterministic results and limits; sensitive content absent. **Risks:** scale and false relevance. **Done:** fixture tasks select expected files with reasons.
 
+## M2.5 - Interactive CLI Interface
+
+**Objective:** provide an optional stateful terminal over completed capabilities. **Prerequisites:** M1-M2. **Work:** bare/explicit interactive entry points, separated input/render/state/dispatch, multiline editing, repository session state, Rich presentation, managed progress, prompt-toolkit history/completion, shared diagnostics, last-result details, and honest future-capability status. **Files:** `interactive.py`, `terminal/`, `diagnostics.py`, `cli.py`, tests and CLI documentation. **Deliverables:** `/help`, `/status`, `/doctor`, `/repo`, `/scan`, `/validate`, `/details`, `/clear`, and `/exit`. **Tests:** startup, dispatch, quoted paths, multiline/completion/history, progress, scan/validation integration, narrow layouts, interrupt/EOF, standalone compatibility, JSON output, and repository integrity. **Acceptance:** direct service reuse, clean exit, no code execution or repository writes, all regressions pass. **Risk:** terminal/platform variance. **Done:** PowerShell-compatible inline terminal flow and automated checks pass. This usability increment does not replace or advance the research milestones.
+
 ## M3 - Safe Workspace and Patch Processing
 
 **Objective:** patch application entirely away from the original. **Prerequisites:** M1-M2. **Work:** robust workspace lifecycle, apply in copy, integrity snapshots, preview, policy/risk v1, artifacts. **Deliverables:** validated/applied disposable workspace result. **Tests:** dirty repositories, deletion/rename, cancellation, cleanup, TOCTOU. **Acceptance:** original unchanged for every pre-approval path. **Risks:** links, permissions, platform semantics. **Done:** failure injection confirms cleanup and integrity evidence.
@@ -33,4 +37,3 @@ Each milestone delivers a working vertical increment and requires approval befor
 ## M8 - Hardening, Final Testing, and Demonstration
 
 **Objective:** close security/reliability gaps and package the project. **Prerequisites:** M7. **Work:** threat-model review, dependency/license audit, cross-platform checks, docs, performance, demo rehearsal. **Deliverables:** release candidate and final evidence. **Tests:** full regression, negative security, clean-machine install, demo. **Acceptance:** traceability has no unexplained MVP gaps. **Risks:** environment drift. **Done:** tagged release with known limitations and actual results.
-

@@ -10,6 +10,7 @@ Set-Location LACE
 uv sync --dev
 uv run lace --help
 uv run lace doctor
+uv run lace
 ```
 
 Use uv as the selected package manager. It creates `.venv`; activate it only when desired:
@@ -27,6 +28,8 @@ uv run pytest
 uv run lace --version
 ```
 
+Interactive tests inject a Rich console and prompt callable rather than depending on a pseudo-terminal. Keep input, renderer, session state, command dispatch, and service logic separated. Test new commands at both the session boundary and Typer entry point; JSON commands must stay ANSI-free. A redirected bare session uses prompt-toolkit's plain-output fallback, while ordinary script automation should continue using explicit commands and `--json`.
+
 Tests that require Ollama or restricted containers must use explicit markers and skip with a reason locally; a milestone cannot be accepted when its required suite is skipped.
 
 ## Development Practice
@@ -38,4 +41,3 @@ Review checklist: typed boundary contracts; untrusted input limits; no shell com
 ## Debugging and Security Review
 
 Use run IDs and structured events. Reproduce with fixture repositories and sanitized artifacts; never paste credentials or private source into issues. Security-sensitive changes require threat-model mapping, a negative test, dependency/runtime review, and confirmation that model output cannot gain new authority. Report suspected vulnerabilities privately according to repository policy once one exists.
-
