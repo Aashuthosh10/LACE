@@ -10,11 +10,13 @@ from lace import __version__
 from lace.config import RepositoryLimits
 from lace.context import select_context
 from lace.diagnostics import collect_diagnostics
+from lace.execution import RestrictedTestPipeline
 from lace.patches import validate_patch
 from lace.repository import RepositoryScanError, scan_repository
 from lace.terminal.input import InputComposer
 from lace.terminal.render import TerminalRenderer
 from lace.terminal.state import SessionState
+from lace.workspace import PatchProcessor
 
 
 def _unquote(value: str) -> str:
@@ -93,6 +95,8 @@ class InteractiveSession:
             "/doctor": self.show_doctor,
             "/scan": self.scan,
             "/validate": self.validate,
+            "/workspace": self.workspace_apply,
+            "/test": self.test_patch,
             "/repo": self.set_repository,
             "/details": self.show_details,
             "/clear": self.clear,
@@ -192,6 +196,50 @@ class InteractiveSession:
             with self.renderer.activity(f"Validating {patch_path.name}"):
                 result = validate_patch(self.state.repository, patch_text)
             self.state.last_activity = self.renderer.validation_result(patch_path.name, result)
+        finally:
+            self.state.phase = "ready"
+
+    def workspace_apply(self, arguments: str) -> None:
+        if self.state.repository is None:
+            self.renderer.warning("No active repository. Use /repo <path> first.")
+            return
+        if not arguments:
+            self.renderer.warning("Usage: /workspace <patch>")
+            return
+        try:
+            patch_path = Path(_one_argument(arguments)).expanduser().resolve(strict=True)
+            if not patch_path.is_file():
+                raise ValueError("patch path is not a file")
+            patch_text = patch_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError, ValueError) as error:
+            self.renderer.error(f"Patch could not be read: {error}")
+            return
+        self.state.phase = "running"
+        try:
+            with self.renderer.activity(f"Applying {patch_path.name} in a disposable workspace"):
+                result = PatchProcessor().process(self.state.repository, patch_text)
+            self.state.last_activity = self.renderer.workspace_result(patch_path.name, result)
+        finally:
+            self.state.phase = "ready"
+
+    def test_patch(self, arguments: str) -> None:
+        if self.state.repository is None:
+            self.renderer.warning("No active repository. Use /repo <path> first.")
+            return
+        if not arguments:
+            self.renderer.warning("Usage: /test <patch>")
+            return
+        try:
+            patch_path = Path(_one_argument(arguments)).expanduser().resolve(strict=True)
+            patch_text = patch_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError, ValueError) as error:
+            self.renderer.error(f"Patch could not be read: {error}")
+            return
+        self.state.phase = "running"
+        try:
+            with self.renderer.activity(f"Testing {patch_path.name} in restricted isolation"):
+                result = RestrictedTestPipeline().run(self.state.repository, patch_text)
+            self.state.last_activity = self.renderer.test_result(patch_path.name, result)
         finally:
             self.state.phase = "ready"
 

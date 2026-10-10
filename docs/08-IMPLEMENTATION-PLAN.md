@@ -16,11 +16,11 @@ Each milestone delivers a working vertical increment and requires approval befor
 
 ## M3 - Safe Workspace and Patch Processing
 
-**Objective:** patch application entirely away from the original. **Prerequisites:** M1-M2. **Work:** robust workspace lifecycle, apply in copy, integrity snapshots, preview, policy/risk v1, artifacts. **Deliverables:** validated/applied disposable workspace result. **Tests:** dirty repositories, deletion/rename, cancellation, cleanup, TOCTOU. **Acceptance:** original unchanged for every pre-approval path. **Risks:** links, permissions, platform semantics. **Done:** failure injection confirms cleanup and integrity evidence.
+**Objective:** patch application entirely away from the original. **Prerequisites:** M1-M2. **Work:** robust workspace lifecycle, apply in copy, integrity snapshots, preview, policy/risk v1, artifacts. **Deliverables:** validated/applied disposable workspace result. **Tests:** dirty repositories, links, limits, Unicode, conflicts, cancellation, cleanup, TOCTOU, unexpected changes, and repeated operations. **Acceptance:** original unchanged for every pre-approval path. **Risks:** permissions, platform semantics, residual filesystem races. **Done:** implemented with clean tracked-file snapshots, deterministic risk v1, CLI/TUI access, fail-closed revalidation, cleanup reporting, and integrity/failure-injection tests. No repository code executes and no original is patched.
 
 ## M4 - Isolated Pytest Execution
 
-**Objective:** safely obtain test evidence. **Prerequisites:** M3 and available rootless Linux container runtime. **Work:** pinned image, fixed command templates, no-network/read-only/capability/resource controls, bounded output. **Deliverables:** `TestExecutor` and isolation diagnostics. **Tests:** network/host/privilege/process/resource escape probes. **Acceptance:** all probes blocked and untrusted tests never execute on host. **Risks:** runtime vulnerabilities/Windows host setup. **Done:** fail-closed behavior verified.
+**Objective:** safely obtain test evidence. **Prerequisites:** M3 and an available Linux container runtime. **Done:** typed Docker executor, digest/hash-pinned approved image, fixed pytest command, fail-closed identity/runtime verification, privilege and resource controls, bounded output, timeout termination, CLI/TUI integration, cleanup orchestration, and controlled live probes. Network, filesystem, non-root, memory, PID, timeout, output, concurrency, cleanup, and original-integrity checks pass on Docker Desktop Linux; no host fallback exists.
 
 ## M5 - Ollama Integration
 

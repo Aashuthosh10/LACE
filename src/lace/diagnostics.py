@@ -6,6 +6,9 @@ import subprocess
 import sys
 from typing import Any
 
+from lace.config import ExecutionPolicy
+from lace.execution.docker import DockerExecutor
+
 
 def _tool_version(command: str, arguments: list[str]) -> tuple[str, str]:
     executable = shutil.which(command)
@@ -35,6 +38,7 @@ def collect_diagnostics(version: str) -> dict[str, Any]:
         else ("unavailable", "not found on PATH")
     )
     foundation_ready = git_status == "ready" and sys.version_info >= (3, 12)
+    isolation_check, isolation_meta = DockerExecutor().verify(ExecutionPolicy())
     return {
         "lace": version,
         "python": {"status": "ready", "version": platform.python_version()},
@@ -45,8 +49,12 @@ def collect_diagnostics(version: str) -> dict[str, Any]:
             "runtime": container,
             "version": container_version,
             "required_from": "M4",
-            "verified": False,
+            "verified": isolation_check.verified,
+            "image": isolation_meta.image,
+            "image_id": isolation_meta.image_id,
+            "errors": list(isolation_check.errors),
         },
         "m1_ready": foundation_ready,
         "m2_ready": foundation_ready,
+        "m4_ready": foundation_ready and isolation_check.verified,
     }

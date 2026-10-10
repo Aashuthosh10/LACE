@@ -163,3 +163,11 @@ Raw source, prompts, and test output are retained only by explicit configuration
 Milestone 2.5 adds no new domain authority. `terminal.input.InputComposer` owns multiline editing, ephemeral history, completion, and key bindings; `terminal.state.SessionState` owns the selected repository, phase, and last activity; `terminal.render.TerminalRenderer` owns Rich output and progress lifecycles; `terminal.session.InteractiveSession` dispatches commands and coordinates existing services. The small `interactive` module is a stable launch facade. No layer starts a subprocess to invoke LACE itself.
 
 Scanner and validator calls remain synchronous, bounded operations. Rich's managed status context keeps activity visible and restores the line on completion, cancellation, or exception; no persistent worker or background process is created. Future model, risk, execution, repair, and approval results may use the renderer only after their owning milestones implement typed services.
+
+## Milestone 4 Execution Boundary
+
+`execution.DockerExecutor` verifies the Linux engine, seccomp, and exact local approved image before constructing a fixed argument-array invocation. `RestrictedTestPipeline` retains the M3 workspace only through execution and cleans it in `finally`. Pytest exit 1 is a test failure; timeout, environment readiness, and runtime failures are distinct typed statuses. There is no host pytest fallback.
+
+## Milestone 3 Workspace Boundary
+
+`patches.assessment` produces a reusable deterministic policy result. `risk` separately produces an advisory, explainable score. `workspace.manager` captures and revalidates the clean tracked-file baseline, creates a temporary Git work tree outside the original, enforces limits, and owns cleanup. `workspace.processor` rechecks patch and source hashes, invokes fixed Git argument arrays, verifies that observed changes match declared targets, and returns a structured result. The CLI and terminal render that result but cannot weaken policy. This boundary provides write isolation only; it never executes copied code.

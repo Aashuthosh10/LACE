@@ -31,8 +31,12 @@ The planned MVP covers local Ollama, repository scanning/context, unified diff g
 
 ## Known Uncertainties and Coverage
 
-OPEN-01 through OPEN-05 in the ADR document remain visible and milestone-bound. Exact sandbox runtime, model/hardware, benchmark scale, risk calibration, and dirty-tree policy require later empirical decisions. M1 covers foundation and patch validation; M2 covers tracked-file scanning and deterministic context selection; M2.5 is presentation-only. The interface reuses existing services, retains no project data beyond the process, and labels AI and isolation capabilities unavailable/unverified. Later features remain traced, with no claim of implementation. Security residual risks are stated in the threat model.
+OPEN-01, OPEN-02, OPEN-03, and OPEN-05 remain visible and milestone-bound. M3 closes the initial risk-weight decision through ADR-014 while leaving later versioned calibration possible. M1 covers foundation and patch validation; M2 covers scanning/context; M2.5 is presentation-only; M3 covers copy-only patch processing and integrity evidence. Restricted execution, AI, repair, approval/final apply, and benchmarks remain future work, with no claim of implementation. Security residual risks are stated in the threat model.
 
 ## M1 Authorization
 
 M1 may proceed because it performs only deterministic parsing, path/policy checks, disposable-copy Git applicability, configuration/logging, and diagnostics. It must not execute fixture or repository code, call Ollama, or modify the original. Acceptance requires actual Ruff and pytest results.
+
+## M4 Audit
+
+ADR-015 resolves OPEN-01 to Docker with a preprovisioned approved image. The image is now built from a digest-pinned Python base with hash-pinned wheels, and controlled live probes pass. Acceptance is environment-specific and does not present container isolation as perfect containment; runtime/image changes invalidate the recorded verification until probes are repeated.

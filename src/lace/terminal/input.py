@@ -19,6 +19,8 @@ COMMANDS = (
     "/repo",
     "/scan",
     "/validate",
+    "/workspace",
+    "/test",
     "/details",
     "/clear",
     "/exit",

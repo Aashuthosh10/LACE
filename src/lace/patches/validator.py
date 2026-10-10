@@ -7,9 +7,8 @@ import tempfile
 from pathlib import Path
 
 from lace.config import Settings
+from lace.patches.assessment import assess_patch
 from lace.patches.models import ValidationResult
-from lace.patches.parser import PatchParseError, parse_unified_diff
-from lace.patches.policy import validate_target_path
 
 
 def _repository_digest(root: Path) -> str:
@@ -58,28 +57,28 @@ def validate_patch(
         )
 
     before = _repository_digest(root)
-    try:
-        info = parse_unified_diff(
-            patch_text,
-            max_bytes=settings.patch.max_bytes,
-            max_files=settings.patch.max_files,
-            max_changed_lines=settings.patch.max_changed_lines,
-        )
-    except (PatchParseError, UnicodeError) as error:
+    assessment = assess_patch(patch_text, settings)
+    if assessment.patch is None:
         return ValidationResult(
             False,
             False,
             False,
             None,
-            (str(error),),
+            assessment.errors,
             root,
             _repository_digest(root) == before,
         )
-
-    errors = tuple(error for target in info.targets for error in validate_target_path(target))
-    if errors:
+    info = assessment.patch
+    errors = assessment.errors
+    if not assessment.policy_allowed:
         return ValidationResult(
-            False, False, False, info, errors, root, _repository_digest(root) == before
+            False,
+            False,
+            False,
+            info,
+            errors,
+            root,
+            _repository_digest(root) == before,
         )
 
     with tempfile.TemporaryDirectory(prefix="lace-validate-") as temporary:

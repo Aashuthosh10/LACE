@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
-DetailKind = Literal["scan", "validation"]
+DetailKind = Literal["scan", "validation", "workspace", "test"]
 
 
 @dataclass(frozen=True)

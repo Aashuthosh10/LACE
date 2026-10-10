@@ -49,6 +49,10 @@ Both documents were read in full, including introductory/scope/objective section
 | NFR-07 | REC | CLI | M1-M8 | no-color/JSON/keyboard tests |
 | UI-01 | M2.5 requested usability enhancement | interactive/diagnostics | M2.5 | bare and explicit startup, command dispatch, narrow layout, interrupt/EOF tests |
 
-## Coverage After M2
+## Coverage After M3
 
-M2 implements Git-tracked repository inventory, safe file classification, and deterministic bounded Python context selection for OBJ-02 and FR-02/03. M2.5 adds an optional interface over those capabilities and does not claim a new research objective. Risk scoring, restricted tests, Ollama, repair, final approval/application, rollback restoration, and benchmark execution intentionally remain unimplemented. This is planned milestone scope, not evidence that the MVP is complete. The planned M1-M7 feature set covers every core objective of both sources; M8 validates the integrated MVP.
+M2 implements Git-tracked repository inventory, safe file classification, and deterministic bounded Python context selection for OBJ-02 and FR-02/03. M2.5 adds an optional interface. M3 implements the copy-only portion of OBJ-04/05, FR-06/07/11, and NFR-03: deterministic policy plus advisory risk, clean tracked-file snapshots, disposable application, integrity revalidation, and cleanup evidence. The synopsis's sandbox objective (pp. 2, 19) and report workflow (sections 1.1, 1.3) are not treated as proof that copy isolation safely contains execution; per ADR-008, restricted tests remain M4. Ollama, repair, approval/final application, rollback restoration, and benchmarks remain unimplemented. The MVP is therefore not yet complete.
+
+## M4 Status
+
+FR-08, OBJ-05, FR-11, and NFR-06 have a fail-closed Docker implementation, an approved hash-pinned image, unit policy coverage, and passing live probes for network/filesystem/resource/timeout/output/cleanup/original-integrity controls. M4 is accepted for the recorded Docker Desktop Linux environment. Runtime or image changes require re-verification.

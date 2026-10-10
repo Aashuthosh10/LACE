@@ -13,9 +13,11 @@ from rich.text import Text
 
 from lace import __version__
 from lace.context.models import ContextSelection
+from lace.execution.models import PipelineResult
 from lace.patches.models import ValidationResult
 from lace.repository.models import RepositoryInventory
 from lace.terminal.state import ActivityDetails, SessionState
+from lace.workspace.models import WorkspaceApplyResult
 
 
 class TerminalRenderer:
@@ -92,6 +94,8 @@ class TerminalRenderer:
             ("/repo <path>", "Select and retain a Git repository"),
             ("/scan <task>", "Scan and rank deterministic Python context"),
             ("/validate <patch>", "Validate a unified diff without changing the repository"),
+            ("/workspace <patch>", "Apply a patch only in a disposable workspace"),
+            ("/test <patch>", "Apply and run pytest in verified restricted isolation"),
             ("/details", "Inspect details from the last scan or validation"),
             ("/status", "Show compact session and capability status"),
             ("/doctor", "Inspect environment dependencies"),
@@ -173,6 +177,44 @@ class TerminalRenderer:
             },
         )
 
+    def workspace_result(self, patch_name: str, result: WorkspaceApplyResult) -> ActivityDetails:
+        table = Table(box=box.SIMPLE, show_header=False, pad_edge=False)
+        table.add_column(style="bold", no_wrap=True)
+        table.add_column(overflow="fold")
+        table.add_row("Operation", "Disposable workspace apply")
+        table.add_row("Patch", patch_name)
+        table.add_row("Status", result.status)
+        table.add_row("Policy", "pass" if result.policy_allowed else "BLOCK")
+        table.add_row("Risk", f"{result.risk.score}/100 {result.risk.level} (advisory)")
+        table.add_row("Apply", "pass" if result.applied else "not applied")
+        table.add_row("Changed", ", ".join(result.changed_files) or "none")
+        table.add_row("Original", "unchanged" if result.original_unchanged else "CHANGED")
+        table.add_row("Cleanup", "pass" if result.workspace_cleaned else "not required/failed")
+        self.console.print(table)
+        for error in result.errors:
+            self.error(error)
+        if result.cleanup_error:
+            self.error(f"Cleanup: {result.cleanup_error}")
+        return ActivityDetails("workspace", "Workspace apply", result.to_dict())
+
+    def test_result(self, patch_name: str, result: PipelineResult) -> ActivityDetails:
+        tests = result.tests
+        table = Table(box=box.SIMPLE, show_header=False, pad_edge=False)
+        table.add_column(style="bold", no_wrap=True)
+        table.add_column(overflow="fold")
+        table.add_row("Operation", "Restricted pytest")
+        table.add_row("Patch", patch_name)
+        table.add_row("Workspace", result.workspace.status)
+        table.add_row("Isolation", "verified" if tests and tests.isolation.verified else "BLOCKED")
+        table.add_row("Tests", tests.status if tests else "not run")
+        table.add_row("Runtime", f"{tests.duration_seconds:.2f}s" if tests else "n/a")
+        table.add_row("Cleanup", "pass" if result.workspace.workspace_cleaned else "failed")
+        self.console.print(table)
+        if tests:
+            for failure in tests.failure_summary:
+                self.error(failure)
+        return ActivityDetails("test", "Restricted pytest", result.to_dict())
+
     def details(self, activity: ActivityDetails | None) -> None:
         if activity is None:
             self.warning("No scan or validation details are available yet.")
@@ -184,12 +226,19 @@ class TerminalRenderer:
                 self.console.print(f"  [cyan]{file['path']}[/] score {file['score']}: {reasons}")
             for reason, count in activity.payload["exclusions"].items():
                 self.console.print(f"  excluded {reason}: {count}")
-        else:
+        elif activity.kind == "validation":
             self.console.print(f"  patch: {activity.payload['patch']}")
             self.console.print(f"  targets: {', '.join(activity.payload['targets']) or 'none'}")
             self.console.print(
                 f"  changes: +{activity.payload['additions']} -{activity.payload['deletions']}"
             )
+            for error in activity.payload["errors"]:
+                self.error(error)
+        else:
+            for finding in activity.payload["risk"]["findings"]:
+                self.console.print(
+                    f"  {finding['rule_id']} +{finding['points']}: {finding['reason']}"
+                )
             for error in activity.payload["errors"]:
                 self.error(error)
 

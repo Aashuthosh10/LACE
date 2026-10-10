@@ -89,3 +89,6 @@ erDiagram
 
 Versioned JSON is authoritative for the MVP because it is inspectable and portable. SQLite becomes justified when querying many runs in M7; it is a rebuildable index, not the only evidence store. PostgreSQL is rejected. Artifacts live under a user-controlled data directory, not a target repository by default. Write atomically, use restrictive permissions where supported, store hashes for large/redacted artifacts, and delete expired workspaces before reports. Logs are JSON Lines for files and concise text for terminals. Cleanup is idempotent and records failures.
 
+M3 uses immutable in-memory `RepositorySnapshot`, `FileSnapshot`, `PatchAssessment`, `RiskAssessment`, `PreparedPatch`, and `WorkspaceApplyResult` contracts. The result includes patch hash, policy decision, risk factors, applicability/application flags, observed changed paths, original-integrity status, workspace creation/cleanup status, and safe errors. Persistent run storage remains deferred; raw source and patch content are not logged.
+
+M4 adds `ExecutionRequest`, `ExecutionPolicy`, `RuntimeMetadata`, `IsolationStatus`, `TestResult`, and `PipelineResult`. JSON distinguishes assertion failure, timeout, environment error, infrastructure error, and interruption, including image identity, controls, bounded output, duration, counts, summaries, and cleanup state.

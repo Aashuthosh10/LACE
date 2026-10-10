@@ -49,3 +49,7 @@
 ## Acceptance Criteria
 
 M1 is accepted when `lace --help`, `--version`, and `doctor` work; configuration validates; a valid fixture patch passes parse/path/Git checks in a disposable copy; malformed, traversal, absolute, forbidden, and non-applicable patches fail; the original fixture remains byte-for-byte and Git-status unchanged; Ruff and pytest pass. M1 executes no target repository code. Later milestones use the criteria in `08-IMPLEMENTATION-PLAN.md`.
+
+M3 requires a clean Git root, snapshots the HEAD commit/tree plus hashes and modes of eligible tracked regular files, and rejects symlinks, submodules, unsupported modes, unsafe paths, and configured size/count excesses. Patch content and repository state are revalidated before application. Only `git apply --check` and `git apply` run in the disposable workspace; no repository code is executed. Post-apply changes must exactly equal declared patch targets. Cleanup and original-integrity outcomes are reported independently.
+
+M4 uses the fixed `python -m pytest -q --disable-warnings --maxfail=20` template in a locally installed approved image. Docker runs non-root with no network, a read-only root, dropped capabilities, `no-new-privileges`, bounded CPU/memory/PIDs/time/output, private tmpfs, and only the disposable workspace mounted writable. Missing Linux engine, seccomp, or image fails closed; no pull or installation occurs.

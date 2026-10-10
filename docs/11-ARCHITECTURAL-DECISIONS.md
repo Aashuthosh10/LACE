@@ -38,15 +38,23 @@ Use standard logging with JSON Lines for persisted events and redaction. Reject 
 ### ADR-012: Model Independence and Future Extensions
 Domain contracts do not name a specific model. Tree-sitter, embeddings, languages, CI/GitHub, static analysis, fix memory, and dashboards remain adapters/future work, not core dependencies.
 
+### ADR-013: Clean Tracked-File Workspace Baseline
+M3 requires an exact clean Git work tree and copies only eligible tracked regular files into a temporary directory outside the repository. Symlinks, submodules, unsupported modes, unsafe/sensitive/generated paths, and configured limits fail closed or are explicitly excluded before copying. Patch and repository hashes are revalidated before application; observed changes must equal declared targets. This makes integrity evidence deterministic while dirty-tree/final-original application remains deferred to M6.
+
+### ADR-014: Advisory Risk v1
+M3 uses deterministic, capped weights for dependency/config/security-related paths, breadth, line volume, deletion concentration, and suspicious added commands, labeled low below 25, moderate below 50, and high otherwise. Risk is review guidance only and cannot override policy. Calibration may revise weights through a versioned future decision without changing this authority boundary.
+
+### ADR-015: Docker With a Preprovisioned Approved Pytest Image
+M4 uses Docker Linux containers and an exact administrator-configured local image. Runs never pull images, install packages, accept repository commands, or accept arbitrary Docker flags. Missing engine capabilities or image fails closed. Docker Desktop supplies a Linux VM boundary on Windows; it is not perfect isolation, and acceptance requires live probes for the configured environment.
+
+The accepted v1 image uses the official Python 3.12.12 slim-bookworm amd64 manifest `sha256:2986c55f...130be301`, pytest 9.0.2, and SHA-256-locked wheels. Image labels, OS, architecture, and UID/GID 65534 are verified before execution. The local built image ID is recorded by diagnostics rather than hard-coded because reproducible metadata attestations can alter the manifest-list ID.
+
 ## Unresolved Decisions
 
 | ID | Decision | Why unresolved | Deadline/default |
 |---|---|---|---|
-| OPEN-01 | Rootless Podman vs rootless Docker | host/runtime availability and isolation probes needed | M4; fail closed |
 | OPEN-02 | Default local model and minimum hardware | sources name no model; empirical compatibility required | M5; user config required |
 | OPEN-03 | Benchmark task count/repetitions | depends on available compute and adviser methodology | before M7; report power/limitations |
-| OPEN-04 | Exact risk weights/threshold labels | must be calibrated against fixtures | M3; never override hard policy |
 | OPEN-05 | Whether final apply supports dirty trees | correctness/UX trade-off | M6; default reject dirty or changed state |
 
 None blocks M1 because it executes no repository code, contacts no model, and never applies to the original.
-

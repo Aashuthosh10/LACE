@@ -87,4 +87,5 @@ def scanning_repository(tmp_path: Path) -> Path:
     link_blob = run_git(repository, "hash-object", "-w", "--stdin", input_text="../outside.py")
     run_git(repository, "update-index", "--add", "--cacheinfo", f"120000,{link_blob},escape.py")
     run_git(repository, "commit", "--quiet", "-m", "scanner fixture")
+    run_git(repository, "checkout", "--", "escape.py")
     return repository

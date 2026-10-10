@@ -10,6 +10,8 @@ lace interactive [--repo PATH]                   # M2.5 explicit mode
 lace --help | --version
 lace doctor [--json]
 lace validate PATCH --repo PATH [--json]       # M1
+lace workspace apply PATCH --repo PATH [--json] # M3
+lace test PATCH --repo PATH [--json]            # M4
 lace scan --repo PATH --task TEXT [--json]       # M2
 lace run TASK --repo PATH [--config FILE]       # M3-M6 proposed
 lace report RUN_ID [--json]                     # proposed
@@ -21,7 +23,9 @@ Exit codes: `0` success, `2` usage/configuration, `3` repository, `4` invalid pa
 
 ## Interactive Mode
 
-Bare `lace` and `lace interactive` open an optional stateful terminal. The active repository defaults to the current directory only when it is a valid Git root. `/repo <path>` changes it after scanner validation. Commands are `/help`, `/status`, `/doctor`, `/scan <task>`, `/validate <patch>`, `/details`, `/repo <path>`, `/clear`, and `/exit`. Quoted paths and Unicode input are accepted. Empty input is ignored, `Ctrl+C` cancels input or the current bounded operation, and EOF or `/exit` closes cleanly.
+Bare `lace` and `lace interactive` open an optional stateful terminal. The active repository defaults to the current directory only when it is a valid Git root. `/repo <path>` changes it after scanner validation. Commands include `/workspace <patch>` in addition to `/help`, `/status`, `/doctor`, `/scan`, `/validate`, `/details`, `/repo`, `/clear`, and `/exit`. Quoted paths and Unicode input are accepted. Empty input is ignored, `Ctrl+C` cancels input or the current bounded operation, and EOF or `/exit` closes cleanly.
+
+`workspace apply` requires a clean repository, reports policy, advisory risk factors, applicability, changed files, original-integrity evidence, and cleanup status, then exits nonzero for a block or failure. “Applied” means applied only to the disposable workspace; M3 never writes the original repository.
 
 The composer uses Enter to submit and Alt+Enter to insert a newline. Up/Down navigate in-memory session history, and slash-command completion is available through Tab. Multiline continuation uses a compact `|` marker. History is intentionally not persisted to disk because tasks and paths may be sensitive.
 

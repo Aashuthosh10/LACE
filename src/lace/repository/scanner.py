@@ -47,7 +47,7 @@ def _git_root(repository: Path) -> Path:
     return root
 
 
-def _tracked_entries(root: Path) -> list[tuple[str, str]]:
+def tracked_entries(root: Path) -> list[tuple[str, str]]:
     completed = subprocess.run(
         ["git", "-C", str(root), "ls-files", "--stage", "-z"],
         capture_output=True,
@@ -70,7 +70,7 @@ def _tracked_entries(root: Path) -> list[tuple[str, str]]:
     return sorted(entries, key=lambda entry: entry[1].casefold())
 
 
-def _excluded_by_path(path: str) -> str | None:
+def exclusion_reason(path: str) -> str | None:
     policy_errors = validate_target_path(path)
     if policy_errors:
         return "sensitive_or_unsafe_path"
@@ -114,7 +114,7 @@ def _kind(path: str) -> FileKind:
     return "other"
 
 
-def _contained_regular_file(root: Path, relative: str) -> tuple[Path | None, str | None]:
+def contained_regular_file(root: Path, relative: str) -> tuple[Path | None, str | None]:
     candidate = root.joinpath(*PurePosixPath(relative).parts)
     current = root
     for part in PurePosixPath(relative).parts:
@@ -135,7 +135,7 @@ def scan_repository(root: Path, limits: RepositoryLimits | None = None) -> Repos
     """Inventory safe Git-tracked files without executing repository content."""
     limits = limits or RepositoryLimits()
     repository = _git_root(root)
-    entries = _tracked_entries(repository)
+    entries = tracked_entries(repository)
     if len(entries) > limits.max_files:
         raise RepositoryScanError(f"repository exceeds the {limits.max_files}-file inventory limit")
 
@@ -144,7 +144,7 @@ def scan_repository(root: Path, limits: RepositoryLimits | None = None) -> Repos
     total_bytes = 0
     warnings: list[str] = []
     for mode, relative in entries:
-        reason = _excluded_by_path(relative)
+        reason = exclusion_reason(relative)
         if reason:
             exclusions.append(Exclusion(relative, reason))
             continue
@@ -154,7 +154,7 @@ def scan_repository(root: Path, limits: RepositoryLimits | None = None) -> Repos
         if mode not in {"100644", "100755"}:
             exclusions.append(Exclusion(relative, "unsupported_git_mode"))
             continue
-        file_path, reason = _contained_regular_file(repository, relative)
+        file_path, reason = contained_regular_file(repository, relative)
         if reason or file_path is None:
             exclusions.append(Exclusion(relative, reason or "unsafe_file"))
             continue
@@ -202,7 +202,7 @@ def scan_repository(root: Path, limits: RepositoryLimits | None = None) -> Repos
 
 def read_inventory_text(root: Path, metadata: FileMetadata) -> str:
     """Revalidate and read a previously inventoried file without following links."""
-    file_path, reason = _contained_regular_file(root, metadata.path)
+    file_path, reason = contained_regular_file(root, metadata.path)
     if reason or file_path is None:
         raise RepositoryScanError(f"tracked file changed or became unsafe: {metadata.path}")
     data = file_path.read_bytes()

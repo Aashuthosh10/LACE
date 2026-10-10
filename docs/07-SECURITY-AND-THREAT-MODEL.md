@@ -42,6 +42,8 @@ This tightens the report's “sandbox copy” implementation detail without over
 
 Policy yields allowed/blocked with stable rule IDs. Blocks cannot be lowered by risk score or model claims. Risk is an advisory, explainable score used to focus review; its weights are versioned and measured for false positives/negatives. Neither is called a security proof.
 
+M3 risk v1 adds deterministic factors for dependency/config/security-related paths, breadth, changed-line volume, deletion-heavy patches, and suspicious added command text. Scores are capped at 100 with low (0-24), moderate (25-49), and high (50-100) labels. These labels never authorize a blocked patch. M3 rejects dirty trees, tracked links/submodules, and baseline drift; a residual platform filesystem race remains until stronger OS isolation is introduced.
+
 ## Network, Filesystem, and Resources
 
 The model gateway talks only to a configured loopback Ollama endpoint by default. The test container has no network. It sees a read-only image and one writable ephemeral work tree, not the original, home directory, credentials, Docker socket, or arbitrary devices. Default limits are 120 seconds, 2 CPUs, 2 GiB, 256 PIDs, and 2 MiB output, subject to recorded configuration.
@@ -50,3 +52,8 @@ The model gateway talks only to a configured loopback Ollama endpoint by default
 
 Every decision records rule/config versions, hashes, timestamps, tool/image versions, and outcomes without secrets. Failures stop progression, kill child processes, retain only configured evidence, and attempt workspace cleanup. Residual risks include container/runtime vulnerabilities, weak tests, compromised dependencies/tools, policy gaps, social engineering at approval, and platform-specific filesystem races.
 
+M4 never mounts the Docker socket, host home, original repository, or credentials. Only the disposable M3 workspace is writable. Residual risks include Docker Desktop/WSL2 and kernel/runtime vulnerabilities, malicious behavior within allowed resources, deceptive output, and fixture dependencies absent from the approved image. Image provisioning and trust remain administrator responsibilities outside a run.
+
+### M4 Acceptance Evidence
+
+The approved image is Linux/amd64 with Python 3.12.12, pytest 9.0.2, and UID/GID 65534. Live Docker probes confirm network denial, inaccessible host/root paths, a read-only container root, memory and PID enforcement, timeout termination, output truncation, unique concurrent containers, cleanup, and unchanged original repositories. These observations apply to the recorded Docker Desktop/WSL2 environment and are not proof against container-runtime or kernel vulnerabilities.

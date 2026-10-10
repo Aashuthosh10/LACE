@@ -14,6 +14,7 @@ def test_help_and_version() -> None:
     assert "doctor" in help_result.stdout
     assert "validate" in help_result.stdout
     assert "scan" in help_result.stdout
+    assert "workspace" in help_result.stdout
     assert version_result.exit_code == 0
     assert version_result.stdout.startswith("lace 0.1.0")
 
@@ -24,7 +25,8 @@ def test_doctor_json() -> None:
     payload = json.loads(result.stdout)
     assert payload["python"]["status"] == "ready"
     assert payload["git"]["status"] == "ready"
-    assert payload["isolation"]["verified"] is False
+    assert payload["isolation"]["image"] == "lace-pytest:3.12-v1"
+    assert payload["m4_ready"] is payload["isolation"]["verified"]
     assert payload["m2_ready"] is True
     assert "\x1b" not in result.stdout
 
@@ -61,6 +63,23 @@ def test_scan_json(scanning_repository) -> None:
     assert payload["selection"]["selected_files"][0]["path"] == "src/shop/discount.py"
     assert "context" not in payload["selection"]
     assert "\x1b" not in result.stdout
+
+
+def test_workspace_apply_json(git_repository, tmp_path, valid_patch: str) -> None:
+    patch = tmp_path / "fix.patch"
+    patch.write_text(valid_patch, encoding="utf-8")
+    original = (git_repository / "calculator.py").read_bytes()
+    result = runner.invoke(
+        app,
+        ["workspace", "apply", str(patch), "--repo", str(git_repository), "--json"],
+    )
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "applied"
+    assert payload["changed_files"] == ["calculator.py"]
+    assert payload["original_unchanged"] is True
+    assert payload["workspace_cleaned"] is True
+    assert (git_repository / "calculator.py").read_bytes() == original
 
 
 def test_bare_command_launches_interactive(monkeypatch) -> None:

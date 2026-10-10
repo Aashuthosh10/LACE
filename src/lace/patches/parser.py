@@ -7,6 +7,7 @@ from lace.patches.models import PatchInfo
 
 _DIFF_HEADER = re.compile(r"^diff --git a/(\S+) b/(\S+)$")
 _HUNK_HEADER = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@(?: .*)?$")
+_MODE_LINE = re.compile(r"^(?:new file mode|deleted file mode|old mode|new mode) (\d{6})$")
 
 
 class PatchParseError(ValueError):
@@ -88,11 +89,15 @@ def parse_unified_diff(
             deletions += 1
         elif in_hunk and (line.startswith(" ") or line == r"\ No newline at end of file"):
             continue
-        elif line.startswith(
-            ("index ", "new file mode ", "deleted file mode ", "old mode ", "new mode ")
-        ):
+        elif line.startswith("index "):
             if current.old_header is not None:
                 raise PatchParseError(f"metadata appears after file headers at line {number}")
+        elif line.startswith(("new file mode ", "deleted file mode ", "old mode ", "new mode ")):
+            if current.old_header is not None:
+                raise PatchParseError(f"metadata appears after file headers at line {number}")
+            mode_match = _MODE_LINE.fullmatch(line)
+            if mode_match is None or mode_match.group(1) not in {"100644", "100755"}:
+                raise PatchParseError(f"unsupported Git mode at line {number}")
         elif line:
             raise PatchParseError(f"unsupported or malformed line {number}")
 

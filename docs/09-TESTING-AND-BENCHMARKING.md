@@ -45,3 +45,10 @@ Also report denominators, skipped/not-run outcomes, patch size, model/tool versi
 
 CI/local gates are Ruff format/check, pytest unit/integration, and later marked isolation/end-to-end suites. Security controls require both allow and deny tests. A passing suite with skipped required isolation tests does not satisfy M4 acceptance.
 
+## Milestone 3 Verification
+
+M3 tests cover policy/risk separation, deterministic scoring, valid application in a disposable workspace, tracked-link rejection, dirty repositories, secret/traversal/absolute/Windows-style paths, binary and unsupported-mode patches, file/line/byte limits, conflicts, Unicode filenames, patch and source TOCTOU, unexpected post-apply changes, simulated apply failure/interruption/cleanup failure, repeated operations, and byte/status preservation of the original. Tests never execute target repository code.
+
+## Milestone 4 Verification
+
+Unit tests inspect exact Docker controls and classify pass, assertion failure, timeout, and missing-runtime outcomes. Controlled live probes verify network denial, host/root filesystem restrictions, UID/GID 65534, PID and memory limits, timeout termination, bounded output, cleanup, concurrent names, and original integrity. These fixtures execute only through Docker, never the host interpreter. The accepted local image identity and probe results must be re-established after runtime or image changes.
